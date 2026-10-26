@@ -1,0 +1,50 @@
+---
+title: Worked example
+description: A four-box chicken and rice meal prep computed with recipemacro, checked against published figures.
+---
+
+This example uses the per-100 g rows published in the "macros per 100 g of common ingredients"
+table on RecipeTool's [recipe macro calculator](https://recipetool.net/tools/recipe-macro-calculator)
+(values derived from USDA records), and the gram weights from that page's meal-prep example.
+
+| Ingredient | Grams | kcal / 100 g | Protein / 100 g | Carbs / 100 g | Fat / 100 g |
+|---|---:|---:|---:|---:|---:|
+| Chicken breast, cooked | 600 | 165 | 31 | 0 | 3.6 |
+| White rice, cooked (3 cups × 158 g) | 474 | 130 | 2.7 | 28.2 | 0.3 |
+| Olive oil (2 tbsp × 13.5 g) | 27 | 900 | 0 | 0 | 100 |
+
+```go
+recipe := []recipemacro.Ingredient{
+    {Name: "chicken breast, cooked", Grams: 600, CalPer100g: 165, ProteinPer100g: 31, FatPer100g: 3.6},
+    {Name: "white rice, cooked", Grams: 474, CalPer100g: 130, ProteinPer100g: 2.7, CarbsPer100g: 28.2, FatPer100g: 0.3},
+    {Name: "olive oil", Grams: 27, CalPer100g: 900, FatPer100g: 100},
+}
+whole := recipemacro.Sum(recipe)
+per := whole.PerServing(4)
+```
+
+Output (this is the `ExampleTotals_PerServing` test in the repository, so it is verified on every `go test`):
+
+```text
+whole:   1849.2 kcal  P 198.8 g  C 133.7 g  F 50.0 g
+per box: 462.3 kcal  P 49.7 g  C 33.4 g  F 12.5 g
+```
+
+The per-ingredient gram figures match the published rows: chicken 186.0 g protein and 21.6 g fat,
+rice 12.8 g protein, 133.7 g carbohydrate and 1.4 g fat, oil 27.0 g fat.
+(The published example also includes 4 cups of broccoli, which is left out here because its per-100 g row is not in the table.)
+
+## Label calories versus 4-4-9 calories
+
+`recipemacro` adds up the calorie values you give it. If you instead recompute energy from the
+macros with the Atwater general factors (4 kcal per gram of protein and carbohydrate, 9 kcal per gram of fat):
+
+```text
+4 × 198.8 + 4 × 133.7 + 9 × 50.0 = 1780.0 kcal   (445.0 per box)
+```
+
+That is 69.2 kcal lower than the 1849.2 kcal sum of the per-100 g calorie values. Most of the gap is the chicken:
+its row says 165 kcal per 100 g, while `4 × 31 + 9 × 3.6 = 156.4`. Database calorie values use
+food-specific factors, so they rarely equal the 4-4-9 estimate. Pick one method and use it for every recipe you compare.
+
+Using the 4-4-9 energy, the calorie split of this recipe is about 45% protein, 30% carbohydrate and 25% fat.

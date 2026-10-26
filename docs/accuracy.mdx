@@ -1,0 +1,33 @@
+---
+title: Accuracy and pitfalls
+description: The input mistakes that move per-serving macros more than any rounding does.
+---
+
+The arithmetic in `recipemacro` is exact. Almost every error in a recipe's macros comes from the inputs.
+
+## Weigh in the same state as the data row
+
+A per-100 g value describes food in a particular state. "Chicken breast, cooked" and "chicken breast, raw" are different rows,
+because meat loses water as it cooks and the same piece weighs less afterwards. If you weigh raw chicken and use the cooked row,
+you overstate protein and calories. Convert first, or pick the row that matches what you put on the scale.
+The same applies to rice, pasta, lentils and oats, which gain water.
+
+## Prefer grams to cups
+
+A cup of flour can weigh roughly 120 g or 150 g depending on how it is filled, which moves its carbohydrate by about 25%.
+The package takes grams only, so any cup or spoon conversion happens before you call it. Record the conversion you used.
+
+## Servings must be a positive count
+
+`PerServing(0)` and negative counts are treated as one serving instead of panicking or returning `+Inf`. Validate the
+servings value at your input boundary if a zero should be reported to the user as an error.
+
+## Rounding
+
+`Sum` and `PerServing` return unrounded `float64` values. Round only for display. Rounding each ingredient first and then summing
+can shift a whole-recipe total by a few tenths of a gram.
+
+## Missing fields
+
+Any macro you leave unset is zero. An ingredient with `Grams` set but no per-100 g values contributes nothing,
+which is correct for water and salt and wrong for anything else, so check imported data for empty rows.

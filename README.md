@@ -23,3 +23,13 @@ per := t.PerServing(2) // 412.5 kcal, 77.5 g protein per serving
 ## License
 
 MIT
+
+## Documentation
+
+Guide, worked example and accuracy notes: https://docs.page/theluckystrike/recipemacro
+
+## Tests
+
+```bash
+go test ./...
+```

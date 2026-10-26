@@ -1,0 +1,53 @@
+---
+title: recipemacro
+description: Per-serving recipe calories and macros in Go, computed from per-100 g ingredient data.
+---
+
+`recipemacro` is a small, dependency-free Go package that does one job: given a list of
+ingredients with their weight in grams and their calories, protein, carbohydrate and fat
+**per 100 g**, it totals the recipe and divides the totals across servings.
+
+## Install
+
+```bash
+go get github.com/theluckystrike/recipemacro
+```
+
+## Quick start
+
+```go
+ings := []recipemacro.Ingredient{
+    {Name: "chicken breast, cooked", Grams: 500, CalPer100g: 165, ProteinPer100g: 31, FatPer100g: 3.6},
+}
+per := recipemacro.Sum(ings).PerServing(2)
+// per.Calories == 412.5, per.Protein == 77.5
+```
+
+## API
+
+| Identifier | What it does |
+|---|---|
+| `Ingredient` | One recipe line: `Name`, `Grams`, and `CalPer100g`, `ProteinPer100g`, `CarbsPer100g`, `FatPer100g`. |
+| `Sum(ings []Ingredient) Totals` | Adds `value_per_100g × grams ÷ 100` for every ingredient. An empty or nil slice returns zero totals. |
+| `Totals` | `Calories`, `Protein`, `Carbs`, `Fat` for the whole recipe (or for one serving). |
+| `(Totals).PerServing(n int) Totals` | Divides every field by `n`. A zero or negative `n` is treated as 1, so the call never divides by zero. |
+
+The formula for every field is the same:
+
+```text
+recipe total  = Σ ( grams × value per 100 g ÷ 100 )
+per serving   = recipe total ÷ servings
+```
+
+## What the package does not do
+
+- It has no food database. You supply the per-100 g values (for example from USDA FoodData Central or a product label).
+- It does not convert cups or spoons to grams, and it does not convert raw weight to cooked weight. Both matter; see [Accuracy and pitfalls](/accuracy).
+- It reports the calories you put in. It does not recompute calories from the macros with 4-4-9 factors; the [worked example](/worked-example) shows why the two numbers differ.
+
+## Tests
+
+`go test ./...` runs table tests that reproduce published whole-recipe gram figures and a
+runnable `Example` whose output is checked by the Go test runner.
+
+License: MIT.
