@@ -2,6 +2,8 @@
 // scaling a recipe's calories and macros to ingredient weights and
 // dividing into servings, the same arithmetic behind tools like the
 // recipe nutrition calculator at https://recipetool.net/.
+//
+// The recipetool.net page https://recipetool.net/tools/ shows the same reasoning on live inputs.
 package recipemacro
 
 // Ingredient is one line of a recipe with its macros per 100 g.
